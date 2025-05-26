@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html dir="{{#if isRTL}}rtl{{else}}ltr{{/if}}" lang="{{lang}}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{#if isHebrew}}תשלום בוצע בהצלחה{{else}}Payment Successful{{/if}}</title>
+</head>
+<body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
+    <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 30px;">
+        <h1 style="color: #4CAF50; text-align: center;">
+            {{#if isHebrew}}✅ תשלום בוצע בהצלחה{{else}}✅ Payment Successful{{/if}}
+        </h1>
+        <p>{{#if isHebrew}}שלום {{customerName}},{{else}}Hello {{customerName}},{{/if}}</p>
+        <p>{{#if isHebrew}}תשלומך עבור {{planName}} בסך {{amount}} בוצע בהצלחה.{{else}}Your payment of {{amount}} for {{planName}} has been processed successfully.{{/if}}</p>
+        <div style="background: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <strong>{{#if isHebrew}}פרטי ההזמנה:{{else}}Order Details:{{/if}}</strong><br>
+            {{#if isHebrew}}מוצר:{{else}}Product:{{/if}} {{planName}}<br>
+            {{#if isHebrew}}סכום:{{else}}Amount:{{/if}} {{amount}}<br>
+            {{#if isHebrew}}תאריך:{{else}}Date:{{/if}} {{date}}
+        </div>
+        <p>{{#if isHebrew}}תודה שבחרת בנו!{{else}}Thank you for choosing us!{{/if}}</p>
+    </div>
+</body>
+</html>
