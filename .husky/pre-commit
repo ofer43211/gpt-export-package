@@ -1,0 +1,17 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running pre-commit checks..."
+
+# Check if we're in the React directory
+if [ -d "gpts/AI-SaaS-Builder" ]; then
+  echo "Running React tests..."
+  cd gpts/AI-SaaS-Builder
+  npm test -- --run --reporter=verbose || {
+    echo "❌ React tests failed. Commit aborted."
+    exit 1
+  }
+  cd ../..
+fi
+
+echo "✅ All pre-commit checks passed!"

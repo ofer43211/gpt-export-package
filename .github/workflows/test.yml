@@ -1,0 +1,140 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main, master, develop, claude/** ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  test-react:
+    name: Test React Components
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./gpts/AI-SaaS-Builder
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: './gpts/AI-SaaS-Builder/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Generate coverage report
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./gpts/AI-SaaS-Builder/coverage/lcov.info
+          flags: react
+          name: react-coverage
+        continue-on-error: true
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: react-test-results
+          path: |
+            ./gpts/AI-SaaS-Builder/coverage/
+          retention-days: 30
+
+  test-powershell:
+    name: Test PowerShell Module
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        working-directory: ./gpts/SortCleanup
+        shell: pwsh
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+          Import-Module Pester
+
+      - name: Show Pester version
+        run: |
+          Get-Module Pester -ListAvailable | Select-Object Name, Version
+
+      - name: Run Pester tests
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Tests'
+          $config.Run.Exit = $true
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.Path = './SortCleanup.psm1'
+          $config.CodeCoverage.OutputFormat = 'JaCoCo'
+          $config.CodeCoverage.OutputPath = './coverage.xml'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputFormat = 'NUnitXml'
+          $config.TestResult.OutputPath = './testResults.xml'
+          $config.Output.Verbosity = 'Detailed'
+
+          Invoke-Pester -Configuration $config
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: always()
+        with:
+          files: |
+            ./gpts/SortCleanup/testResults.xml
+          check_name: PowerShell Test Results
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: powershell-test-results
+          path: |
+            ./gpts/SortCleanup/testResults.xml
+            ./gpts/SortCleanup/coverage.xml
+          retention-days: 30
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [test-react, test-powershell]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-react.result }}" != "success" ]; then
+            echo "React tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.test-powershell.result }}" != "success" ]; then
+            echo "PowerShell tests failed"
+            exit 1
+          fi
+          echo "All tests passed!"
+
+      - name: Summary
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ React Component Tests: ${{ needs.test-react.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "✅ PowerShell Module Tests: ${{ needs.test-powershell.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All test suites completed successfully!" >> $GITHUB_STEP_SUMMARY

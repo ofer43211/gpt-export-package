@@ -160,7 +160,7 @@ export default function BillingWidget() {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          ��� ניהול חיוב ומנויים
+          ��� ניהול חיוב ומנויים
         </h2>
         <p className="text-gray-600">
           נהל את המנוי שלך, תשלומים ופרטי חיוב
@@ -207,7 +207,7 @@ export default function BillingWidget() {
               onClick={handleUpdatePaymentMethod}
               className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
             >
-              ��� עדכן אמצעי תשלום
+              ��� עדכן אמצעי תשלום
             </button>
             
             {!subscription.cancelAtPeriodEnd && (
@@ -278,13 +278,13 @@ export default function BillingWidget() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    
+                    <a
                       href={invoice.invoiceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-900 font-medium"
                     >
-                      ��� הורד PDF
+                      📄 הורד PDF
                     </a>
                   </td>
                 </tr>
